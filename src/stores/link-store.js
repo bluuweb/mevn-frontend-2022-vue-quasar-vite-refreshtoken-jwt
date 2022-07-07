@@ -20,10 +20,8 @@ export const useLinkStore = defineStore("link", () => {
           longLink,
         },
       });
-      //   console.log(res.data);
       links.value.push(res.data.newLink);
     } catch (error) {
-      //   console.log(error.response?.data || error);
       throw error.response?.data || error;
     }
   };
@@ -38,7 +36,6 @@ export const useLinkStore = defineStore("link", () => {
           Authorization: "Bearer " + userStore.token,
         },
       });
-      //   links.value = res.data.links.map((item) => item);
       links.value = [...res.data.links];
     } catch (error) {
       console.log(error.response?.data || error);
@@ -48,5 +45,43 @@ export const useLinkStore = defineStore("link", () => {
   // por ahora tiene mejor rendimiento
   getLinks();
 
-  return { createLink, links, getLinks };
+  const removeLink = async (id) => {
+    try {
+      await api({
+        url: `/links/${id}`,
+        method: "DELETE",
+        headers: {
+          Authorization: "Bearer " + userStore.token,
+        },
+      });
+      // console.log("eliminado!");
+      links.value = links.value.filter((item) => item._id !== id);
+    } catch (error) {
+      console.log(error.response?.data || error);
+      throw error.response?.data || error;
+    }
+  };
+
+  const updateLink = async (link) => {
+    try {
+      await api({
+        url: `/links/${link._id}`,
+        method: "PATCH",
+        headers: {
+          Authorization: "Bearer " + userStore.token,
+        },
+        data: {
+          longLink: link.longLink,
+        },
+      });
+      links.value = links.value.map((item) =>
+        item._id === link._id ? link : item
+      );
+    } catch (error) {
+      // console.log(error.response?.data || error);
+      throw error.response?.data || error;
+    }
+  };
+
+  return { createLink, links, getLinks, removeLink, updateLink };
 });
